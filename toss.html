@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        playerScore = { Player: 0, Computer: 0 } 
+        matchData = [] 
+        face = ["Heads", "Tails"]
+        winnerLists = [] 
+        // Main Game Function seperated by time intervals
+        function coinTossFunction() {
+            intervalPerRound = 1
+            return new Promise((resolve) => {
+                resolve(
+                    a = setInterval(function coinToss() {
+                        if (intervalPerRound == 5) {
+                            clearInterval(a)
+                            console.log("********** From All Rounds ************")
+                            console.table([playerScore])
+                            console.log(finalCalculation(playerScore.Player, playerScore.Computer))
+                            console.log("--- FINAL ---")
+                            result(playerScore.Player, playerScore.Computer)
+                            console.table(matchData)
+                            csvDataFile()
+                            
+                        }
+                        else {
+                            console.log(`>>>>>>>>>>>       Round ${intervalPerRound}       <<<<<<<<<<<`)
+                            coinTossing()
+                            intervalPerRound++
+                            return coinToss
+                        }
+                    }(), 15000)
+                )
+            })
+        }
+        
+        // Tossing the Coin by Player and Computer and time intervals between each Coin Toss
+        function coinTossing() {
+            playerCoinTossDetails = []
+            computerCoinTossDetails = []
+            coinTossRange = 0
+            b = setInterval(() => {
+                if (coinTossRange == 10) {
+                    clearInterval(b)
+                    calculatingScore(playerCoinTossDetails, computerCoinTossDetails)
+                    console.table([playerScore])
+                    console.log(finalCalculation(playerScore.Player, playerScore.Computer))
+                    result(playerScore.Player, playerScore.Computer)
+                    winnerLists.push(finalCalculation(playerScore.Player, playerScore.Computer))
+                }
+                else {
+                    tossingTheCoin()
+                    coinTossRange++
+                }
+            }, 1000);
+        }
+        
+        // Calculating Score by who got heads (Player, Computer)
+        function calculatingScore(player, computer) {
+            for (i of player) {
+                if (i == "Heads") {
+                    playerScore.Player += 1
+                }
+            }
+            for (i of computer) {
+                if (i == "Heads") {
+                    playerScore.Computer += 1
+                }
+            }
+        }
+       
+        // Finding Winner Result by Player Score and Computer Score
+        function result(player1, player2) {
+            if (player1 > player2) {
+                console.log(`Player Won`)
+            }
+            else if (player1 < player2) {
+                console.log(`Computer Won`)
+            }
+            else {
+                console.log("Match Draw")
+            }
+        }
+        
+        // Tossing the Coin
+        function tossingTheCoin() {
+            playerTurn = face[Math.floor(Math.random() * 2)]
+            computerTurn = face[Math.floor(Math.random() * 2)]
+            playerCoinTossDetails.push(playerTurn)
+            computerCoinTossDetails.push(computerTurn)
+            matchData.push({ "Round": intervalPerRound - 1, "Player": playerTurn, "Computer": computerTurn })
+            console.log(`Toss ${coinTossRange + 1}  \n Player   : " ${playerTurn} "\n Computer : " ${computerTurn} "`)
+        }
+        
+        // Finding Final Result Calculation by using score difference between Player and Computer
+        function finalCalculation(Player, Computer) {
+            scoreDifference = Player - Computer
+            if (scoreDifference > 0) {
+                return (`Player Got ${Math.abs(scoreDifference)} Heads greater than Computer`)
+            }
+            else if (scoreDifference == 0) {
+                return ("Match Draw")
+            }
+            else {
+                return (`Computer Got ${Math.abs(scoreDifference)} Heads greater than Player`)
+            }
+        }
+        
+        // Transfering the Match data to Excel Sheet by Converting and downloading the csv file
+        function csvDataFile() {
+            matchFile = ""
+            matchFile += "Round,Player,Computer"
+            matchFile += "\r\n"
+            resultNo = 0
+            roundInterval = 10 - 1
+            for (i of matchData) {
+                matchFile += i.Round + "," + i.Player + "," + i.Computer + ","
+                matchFile += "\r\n"
+                if (matchData.indexOf(i) == roundInterval) {
+                    matchFile +=" ===> " + winnerLists[resultNo]
+                    matchFile += "\r\n"
+                    resultNo++
+                    roundInterval = roundInterval + 10
+                    if (resultNo == 4) {
+                        matchFile += "FINAL"
+                        matchFile += "\r\n"
+                        matchFile += winnerLists[resultNo - 1]
+                        matchFile += "\r\n"
+                    }
+                }
+            }
+            let tempBlob = new Blob([matchFile], { type: "text\csv" })
+            //download url which is temporary
+            let tempURL = window.URL.createObjectURL(tempBlob)
+            let activation = document.createElement("a")
+            activation.href = tempURL
+            //forcing this activation or forcefully downloading
+            activation.download = "CoinTossGame.csv"
+            //forceful click
+            activation.click()
+            window.URL.revokeObjectURL(tempURL)
+            activation.remove()
+        }
+        
+        coinTossFunction()
+    </script>
+</body>
+
+</html>
